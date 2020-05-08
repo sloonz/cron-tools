@@ -1,0 +1,29 @@
+:root {
+  --bs-breadcrumb-divider: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpath d='M2.5 0L1 1.5 3.5 4 1 6.5 2.5 8l4-4-4-4z' fill='rgb(248,249,250)'/%3E%3C/svg%3E");
+}
+
+.text-light.breadcrumb-item + .text-light.breadcrumb-item::before {
+  color: rgba(var(--bs-light-rgb), var(--bs-text-opacity));
+}
+
+.log-listing {
+  overflow: auto;
+  width: 100%;
+}
+
+.log-listing table {
+  width: max-content;
+  min-width: 100%;
+}
+
+.log-listing .text-muted {
+  padding-left: 0.5rem;
+  user-select: none;
+}
+
+.log-listing pre {
+  margin-bottom: 0;
+  margin-left: 1rem;
+  padding-right: 0.5rem;
+  overflow: visible;
+}

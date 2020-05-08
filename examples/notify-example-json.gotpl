@@ -1,0 +1,2 @@
+{{define "action"}}pipe{{end}}
+{{define "data"}}{{toJson .}}{{end}}

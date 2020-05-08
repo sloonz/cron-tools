@@ -1,0 +1,3 @@
+[
+	{"user": "root", "host": "otherserver", "id": "otherserver/root/backup", "command": ["/usr/local/bin/backup"], "frequency": "@daily"}
+]

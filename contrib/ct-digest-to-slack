@@ -1,0 +1,61 @@
+#!/usr/bin/python3
+
+import json
+import sys
+import os
+import datetime
+
+failed = []
+missed = []
+
+# In normal circumstances, lastLog.time = previousRunTime + ~1 second so previousRunTime - lastLog.time ~= -1s and "missed condition" is simply that previousRunTime - lastLog.time > 1
+# However, if the last job is still currently running (while ct-digest is run) then the log file is not yet present and it will be mistakenly taken as a missed job. Arbitrarily take that as 6 hours as the threshold for considering a job as missed ; this threshold can be changed by the environment variable MISSED_DELAY
+MISSED_DELAY = int(os.getenv("MISSED_DELAY", 6*3600))
+
+def parse_timestamp(value):
+    return datetime.datetime.fromisoformat(value.replace("Z", "+00:00"))
+
+for job in json.load(sys.stdin):
+    ignore_missed = (job["description"].get("extra") or {}).get("ignore_missed")
+
+    if job["lastLog"] is None and not ignore_missed:
+        missed.append(job)
+        continue
+
+    if job["lastLog"] and job["lastLog"]["footers"]["Exit"] != "code 0":
+        failed.append(job)
+        continue
+
+    if job["lastLog"] and (parse_timestamp(job["previousRunTime"]) - parse_timestamp(job["lastLog"]["time"])).total_seconds() > MISSED_DELAY and not ignore_missed:
+        missed.append(job)
+        continue
+
+blocks = []
+blocks.append({
+    "type": "header",
+    "text": {
+        "type": "plain_text",
+        "text": [":x:", ":white_check_mark:"][int(len(failed) == 0 and len(missed) == 0)] + " Cron Summary: %d failed, %d missed" % (len(failed), len(missed)),
+        "emoji": True,
+    }
+})
+
+if failed:
+    blocks.append({
+        "type": "section",
+        "text": {
+            "type": "mrkdwn",
+            "text": "*Failed:* " + ", ".join(job["description"]["id"] for job in failed),
+        }
+    })
+
+if missed:
+    blocks.append({
+        "type": "section",
+        "text": {
+            "type": "mrkdwn",
+            "text": "*Missed:* " + ", ".join(job["description"]["id"] for job in missed),
+        }
+    })
+
+print(json.dumps({"blocks": blocks}))

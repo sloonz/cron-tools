@@ -1,0 +1,8 @@
+/web/build
+/web/node_modules
+/ct
+/crons-repository
+/man
+__pycache__
+/.bin
+/dist

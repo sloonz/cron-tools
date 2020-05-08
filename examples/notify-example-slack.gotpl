@@ -1,0 +1,33 @@
+{{define "action"}}{{if or (ne .Format "LOG") (ne (get .Footers "Exit") "code 0")}}exec{{end}}{{end}}
+{{define "command"}}curl -s -X POST -H 'Content-type: application/json' -d @- https://hooks.slack.com/services/{{get (readfile "/etc/cron-tools/secrets.json" | fromJson) "slack"}}{{end}}
+{{define "stdin-err" -}}{
+  "blocks": [
+    {
+      "type": "header",
+      "text": {"type": "plain_text", "emoji": false, "text": "Cron Job Failure on {{hostname}}"}
+    }
+  ]
+}{{- end}}
+{{define "stdin-log" -}}{
+  "blocks": [
+    {
+      "type": "header",
+      "text": {"type": "plain_text", "emoji": false, "text": "Cron Job Failure"}
+    },
+    {
+      "type": "section",
+      "text": {"type": "mrkdwn", "text": {{toJson (print "*Command:* `" (shjoin (fromJson (get .Headers "Command"))) "`")}}}
+    },
+    {
+      "type": "section",
+      "fields": [
+        {"type": "mrkdwn", "text": {{toJson (print "*Job ID:* " (get .Headers "Job-ID"))}}},
+        {"type": "mrkdwn", "text": {{toJson (print "*User:* " (get .Headers "User"))}}},
+        {"type": "mrkdwn", "text": {{toJson (print "*Date:* " (.StartTime.Format timeFormats.RFC3339Nano))}}},
+        {"type": "mrkdwn", "text": {{toJson (print "*Host:* " (get .Headers "Host"))}}},
+        {"type": "mrkdwn", "text": {{toJson (print "*Exit:* " (get .Footers "Exit"))}}}
+      ]
+    }
+  ]
+}{{- end}}
+{{define "stdin"}}{{if eq .Format "LOG"}}{{template "stdin-log" .}}{{else}}{{template "stdin-err" .}}{{end}}{{end}}

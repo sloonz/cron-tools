@@ -1,0 +1,14 @@
+{{define "action"}}{{if or (ne .Format "LOG") (ne (get .Footers "Exit") "code 0")}}exec{{end}}{{end}}
+{{define "subject"}}{{if ne .Format "LOG"}}Unknown cron failure on {{hostname}}{{else}}{{get .Headers "Job-ID"}}: {{get .Footers "Exit"}}{{end}}{{end}}
+{{define "command"}}mail -s {{shescape (eval "subject" .)}} test@example.com{end}}
+{{define "stdin"}}{{if eq .Format "LOG"}}{{template "stdin-log" .}}{{else}}{{template "stdin-err" .}}{{end}}{{end}}
+{{define "stdin-log" -}}
+User: {{get .Headers "User"}}@{{hostname}}
+Command: {{shjoin (fromJson (get .Headers "Command"))}}
+Date: {{.StartTime.Format timeFormats.RFC3339Nano}}
+
+{{range .Lines -}}
+{{.TimeOffset}}{{if .IsStderr}}!{{else}}>{{end}} {{.Data}}{{if not .IsChunk}}
+{{end}}
+{{- end}}{{end}}
+{{define "stdin-err"}}{{.RawData}}{{end}}

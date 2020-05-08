@@ -1,0 +1,5 @@
+[
+	{"user": "root", "host": "mainserver", "id": "mainserver/root/backup", "command": ["/usr/local/bin/backup"], "frequency": "@daily"},
+	{"user": "www", "host": "mainserver", "id": "mainserver/www/acme certs", "command": ["/usr/local/bin/acme-certs", "renew certificates"], "frequency": "2 4 * * *"},
+	{"user": "www", "host": "mainserver", "id": "mainserver/www/logrotate", "command": ["/usr/bin/logrotate", "/home/www/conf/logrotate.conf"], "frequency": "@daily"}
+]

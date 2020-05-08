@@ -1,0 +1,51 @@
+version: 2
+
+project_name: cron-tools
+
+before:
+  hooks:
+    - npm ci --prefix web
+    - npm run build --prefix web
+    - make doc
+
+builds:
+  - main: .
+    binary: bin/ct
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+
+archives:
+  - formats: [tar.gz]
+    strip_binary_directory: false
+    files:
+      - src: LICENSE
+        dst: share/doc/cron-tools/LICENSE
+      - src: README.md
+        dst: share/doc/cron-tools/README.md
+      - src: doc/*.md
+        dst: share/doc/cron-tools/doc
+        strip_parent: true
+      - src: man/*.5
+        dst: share/man/man5
+        strip_parent: true
+      - src: man/*.8
+        dst: share/man/man8
+        strip_parent: true
+      - src: examples/*
+        dst: share/cron-tools/notify.d
+        strip_parent: true
+      - src: contrib/*
+        dst: share/cron-tools/contrib
+        strip_parent: true
+
+checksum:
+  name_template: checksums.txt
+
+release:
+  prerelease: auto
